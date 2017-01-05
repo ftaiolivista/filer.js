@@ -296,8 +296,9 @@ var Filer = new function() {
    *     These can be paths or filesystem: URLs.
    */
   var getEntry_ = function(callback, var_args) {
-    var srcStr = arguments[1];
-    var destStr = arguments[2];
+    var errorCallback = arguments[1];
+    var srcStr = arguments[2];
+    var destStr = arguments[3];
 
     var onError = function(e) {
       if (e.code == FileError.NOT_FOUND_ERR) {
@@ -312,10 +313,14 @@ var Filer = new function() {
       }
     };
 
+    if (errorCallback) {
+        onError = errorCallback;
+    }
+
     // Build a filesystem: URL manually if we need to.
     var src = pathToFsURL_(srcStr);
 
-    if (arguments.length == 3) {
+    if (destStr) {
       var dest = pathToFsURL_(destStr);
       self.resolveLocalFileSystemURL(src, function(srcEntry) {
         self.resolveLocalFileSystemURL(dest, function(destEntry) {
@@ -355,7 +360,7 @@ var Filer = new function() {
         src.copyTo(dest, newName, opt_successCallback, opt_errorHandler);
       }
     } else {
-      getEntry_(function(srcEntry, destDir) {
+      getEntry_(function(srcEntry, opt_errorHandler, destDir) {
         if (!destDir.isDirectory) {
           var e = new Error('Oops! "' + destDir.name + ' is not a directory!');
           if (opt_errorHandler) {
@@ -506,7 +511,7 @@ var Filer = new function() {
     if (dirEntryOrPath.isDirectory) { // passed a DirectoryEntry.
       callback(dirEntryOrPath);
     } else if (isFsURL_(dirEntryOrPath)) { // passed a filesystem URL.
-      getEntry_(callback, dirEntryOrPath);
+      getEntry_(callback, opt_errorHandler, dirEntryOrPath);
     } else { // Passed a path. Look up DirectoryEntry and proceeed.
       // TODO: Find way to use getEntry_(callback, dirEntryOrPath); with cwd_.
       cwd_.getDirectory(dirEntryOrPath, {}, callback, opt_errorHandler);
@@ -595,7 +600,7 @@ var Filer = new function() {
     } else {
       getEntry_(function(fileEntry) {
         fileEntry.file(successCallback, opt_errorHandler);
-      }, pathToFsURL_(entryOrPath));
+    }, opt_errorHandler, pathToFsURL_(entryOrPath));
     }
   };
 
@@ -679,7 +684,7 @@ var Filer = new function() {
     if (entryOrPath.isFile || entryOrPath.isDirectory) {
       removeIt(entryOrPath);
     } else {
-      getEntry_(removeIt, entryOrPath);
+      getEntry_(removeIt, entryOrPath, opt_errorHandler);
     }
   };
 
@@ -718,7 +723,7 @@ var Filer = new function() {
             throw e;
           }
         }
-      }, dirEntryOrPath);
+    }, opt_errorHandler, dirEntryOrPath);
     }
   };
 
@@ -800,7 +805,7 @@ var Filer = new function() {
     if (entryOrPath.isFile) {
       writeFile_(entryOrPath);
     } else if (isFsURL_(entryOrPath)) {
-      getEntry_(writeFile_, entryOrPath);
+      getEntry_(writeFile_, opt_errorHandler, entryOrPath);
     } else {
       cwd_.getFile(entryOrPath, {create: true, exclusive: false}, writeFile_,
                    opt_errorHandler);
