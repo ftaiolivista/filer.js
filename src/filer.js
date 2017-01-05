@@ -360,7 +360,7 @@ var Filer = new function() {
         src.copyTo(dest, newName, opt_successCallback, opt_errorHandler);
       }
     } else {
-      getEntry_(function(srcEntry, opt_errorHandler, destDir) {
+      getEntry_(function(srcEntry, destDir) {
         if (!destDir.isDirectory) {
           var e = new Error('Oops! "' + destDir.name + ' is not a directory!');
           if (opt_errorHandler) {
@@ -375,7 +375,7 @@ var Filer = new function() {
         } else {
           srcEntry.copyTo(destDir, newName, opt_successCallback, opt_errorHandler);
         }
-      }, src, dest);
+    }, opt_errorHandler, src, dest);
     }
   }
 
