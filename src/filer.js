@@ -684,7 +684,7 @@ var Filer = new function() {
     if (entryOrPath.isFile || entryOrPath.isDirectory) {
       removeIt(entryOrPath);
     } else {
-      getEntry_(removeIt, entryOrPath, opt_errorHandler);
+      getEntry_(removeIt, opt_errorHandler, entryOrPath);
     }
   };
 
