@@ -574,7 +574,13 @@ var Filer = new function() {
             } else {
               throw e;
             }
-          }
+            } else {
+                if (opt_errorHandler) {
+                  opt_errorHandler(e);
+                } else {
+                  throw e;
+                }
+            }
         }
       );
     };
